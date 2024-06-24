@@ -1,24 +1,27 @@
 import openai
 import polars as pl
 from tqdm import tqdm
-import random
 import json
+import sys
 
-random.seed(42)
 
-model_name = "gpt-4o"
+MODEL_NAME = sys.argv[1]
+N_TEST_SAMPLES = 1000
+RANDOM_SEED = 42
+
+pl.set_random_seed(RANDOM_SEED)
 
 with open('models.json') as f:
     config = json.load(f)
 
 client = openai.OpenAI(
-    base_url=config[model_name]["base_url"],
-    api_key=config[model_name]["api_key"]
+    base_url=config[MODEL_NAME]["base_url"],
+    api_key=config[MODEL_NAME]["api_key"]
 )
 
 def run_llm(input):
     response = client.chat.completions.create(
-        model=model_name,
+        model=MODEL_NAME,
         messages=[
             {"role": "system", "content": "次の文章を全てひらがなに変換してください。"},
             {"role": "user", "content": "<入力>彼は5年前にニューヨークへ行きました.</入力>"},
@@ -42,7 +45,7 @@ df = pl.scan_parquet("data/ndlbib.parquet")
 num_rows = df.collect().height
 
 # Randomly select 1000 samples
-df_sample = df.collect().sample(n=1000, with_replacement=False)
+df_sample = df.collect().sample(n=N_TEST_SAMPLES, with_replacement=False, seed=RANDOM_SEED)
 
 # Initialize a list to store the results
 results = []
@@ -59,8 +62,8 @@ def run_llm_with_retry(text, retries=3):
     return None
 
 # Iterate over each sample in the DataFrame
-pbar = tqdm(total=1000)
-with ThreadPoolExecutor(max_workers=4) as executor:
+pbar = tqdm(total=N_TEST_SAMPLES)
+with ThreadPoolExecutor(max_workers=10) as executor:
     future_to_row = {executor.submit(run_llm_with_retry, row["text"]): row for row in df_sample.iter_rows(named=True)}
     for future in as_completed(future_to_row):
         row = future_to_row[future]
@@ -80,4 +83,4 @@ pbar.close()
 
 # Create a DataFrame from the results and write to a new Parquet file
 results_df = pl.DataFrame(results)
-results_df.write_parquet(f"data/ndlbib_{model_name}.parquet")
+results_df.write_parquet(f"results/ndlbib_{MODEL_NAME}.parquet")

@@ -39,7 +39,7 @@ def normalize(text):
 
 def calculate_cer(name, field_name="reading_output"):
     # Lazily read the Parquet file into a DataFrame
-    df = pl.scan_parquet(f"data/ndlbib_{name}.parquet")
+    df = pl.scan_parquet(f"results/ndlbib_{name}.parquet")
 
     # Collect the DataFrame to get the number of rows
     num_rows = df.collect().height
@@ -85,7 +85,7 @@ def calculate_cer(name, field_name="reading_output"):
 
     # Create a DataFrame from the wrong sentences and write to a new Parquet file
     wrong_sentences_df = pl.DataFrame(wrong_sentences)
-    wrong_sentences_df.write_parquet(f"data/ndlbib_{name}_wrong.parquet")
+    wrong_sentences_df.write_parquet(f"results/ndlbib_{name}_wrong.parquet")
 
 if __name__ == "__main__":
     name = sys.argv[1]

@@ -1,14 +1,19 @@
 import polars as pl
 from tqdm import tqdm
 import pykakasi
-import pyarrow.parquet as pq
+
+RANDOM_SEED = 42
+N_TEST_SAMPLES = 1000
+
+pl.set_random_seed(RANDOM_SEED)
+
 
 def main():
     # Lazily read the Parquet file into a DataFrame
     df = pl.scan_parquet("data/ndlbib.parquet")
 
     # Randomly select 1000 samples
-    df_sample = df.collect().sample(n=1000, with_replacement=False)
+    df_sample = df.collect().sample(n=N_TEST_SAMPLES, with_replacement=False, seed=RANDOM_SEED)
 
     # Initialize Kakasi for conversion
     kks = pykakasi.kakasi()
@@ -26,7 +31,7 @@ def main():
     df_sample = df_sample.select(["text", "reading", "reading_output"])
 
     # Write the new DataFrame to a new Parquet file
-    df_sample.write_parquet("data/ndlbib_kakasi.parquet")
+    df_sample.write_parquet("results/ndlbib_kakasi.parquet")
 
 if __name__ == "__main__":
     main()
