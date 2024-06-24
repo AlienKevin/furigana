@@ -1,9 +1,0 @@
-[package]
-name = "ja_g2p"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-kakasi = "0.1.0"
-kdam = "0.5.2"
-polars = { version = "0.41.1", features = ["parquet"] }
