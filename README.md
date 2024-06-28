@@ -9,6 +9,7 @@ Randomly sampled 1,000 samples from the dataset for evaluation.
 | gpt-4o-2024-05-13 | 2.17% |
 | pykakasi 2.2.1 | 3.71% |
 | deepseek-v2-chat | 10.95% |
+| qwen2-7b-instruct | 55.97% |
 
 # Evaluation
 
